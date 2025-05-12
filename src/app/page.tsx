@@ -209,17 +209,19 @@ export default function Home() {
             });
           }
         });
-      } else if (contact.email && !exportContacts.some(ec => ec.id === contactId && ec.email === contact.email)) {
-        newExports.push({
-          id: contact.id,
-          first_name: contact.first_name,
-          last_name: contact.last_name,
-          title: contact.title || '',
-          company: contact.company || contact.current_org || '',
-          linkedInUrl: contact.linkedInUrl || contact.profile_url || '',
-          email: contact.email,
-          emailStatus: contact.emailStatus,
-        });
+      } else {
+        if (!exportContacts.some(ec => ec.id === contactId && (ec.email === '' || ec.email === undefined))) {
+          newExports.push({
+            id: contact.id,
+            first_name: contact.first_name,
+            last_name: contact.last_name,
+            title: contact.title || '',
+            company: contact.company || contact.current_org || '',
+            linkedInUrl: contact.linkedInUrl || contact.profile_url || '',
+            email: '',
+            emailStatus: contact.emailStatus,
+          });
+        }
       }
     });
     if (newExports.length > 0) {
