@@ -12,9 +12,10 @@ interface ExportContact {
 
 interface ExportTableProps {
   contacts: ExportContact[];
-  onRemove: (contactId: string) => void;
+  onRemove: (contactId: string, email?: string) => void;
   onExport: () => void;
   onExportAll: () => void;
+  onClear: () => void;
 }
 
 const COLUMN_CONFIG = [
@@ -25,7 +26,7 @@ const COLUMN_CONFIG = [
   { key: 'title', label: 'Title' },
 ];
 
-export default function ExportTable({ contacts, onRemove, onExport, onExportAll }: ExportTableProps) {
+export default function ExportTable({ contacts, onRemove, onExport, onExportAll, onClear }: ExportTableProps) {
   const [selectedColumns, setSelectedColumns] = useState<string[]>(COLUMN_CONFIG.map(c => c.key));
 
   const handleToggleColumn = (key: string) => {
@@ -70,6 +71,12 @@ export default function ExportTable({ contacts, onRemove, onExport, onExportAll 
           >
             Copy to Clipboard
           </button>
+          <button
+            onClick={onClear}
+            className="inline-flex items-center justify-center rounded-md border border-transparent bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:w-auto"
+          >
+            Clear
+          </button>
         </div>
       </div>
       <div className="mt-8 flex flex-col">
@@ -91,6 +98,7 @@ export default function ExportTable({ contacts, onRemove, onExport, onExportAll 
                         </label>
                       </th>
                     ))}
+                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
@@ -101,6 +109,17 @@ export default function ExportTable({ contacts, onRemove, onExport, onExportAll 
                           {contact[col.key] || ''}
                         </td>
                       ))}
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
+                        <button
+                          onClick={() => onRemove(contact.id, contact.email)}
+                          className="text-red-500 hover:text-red-700"
+                          title="Remove"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -191,46 +191,65 @@ export default function Home() {
 
   const handleAddToExport = (contactIds: string[]) => {
     let newExports: any[] = [];
+    let updatedExports: any[] = [];
     contactIds.forEach(contactId => {
       const contact = contacts.find((c) => c.id === contactId);
       if (!contact) return;
       if (Array.isArray(contact.emails) && contact.emails.length > 0) {
         contact.emails.forEach((email: string) => {
-          if (!exportContacts.some(ec => ec.id === contactId && ec.email === email)) {
-            newExports.push({
-              id: contact.id,
-              first_name: contact.first_name,
-              last_name: contact.last_name,
-              title: contact.title || '',
-              company: contact.company || contact.current_org || '',
-              linkedInUrl: contact.linkedInUrl || contact.profile_url || '',
-              email,
-              emailStatus: contact.emailStatus,
-            });
-          }
-        });
-      } else {
-        if (!exportContacts.some(ec => ec.id === contactId && (ec.email === '' || ec.email === undefined))) {
-          newExports.push({
+          // Overwrite if same first and last name, else add
+          const idx = exportContacts.findIndex(ec => ec.first_name === contact.first_name && ec.last_name === contact.last_name);
+          const newExport = {
             id: contact.id,
             first_name: contact.first_name,
             last_name: contact.last_name,
             title: contact.title || '',
             company: contact.company || contact.current_org || '',
             linkedInUrl: contact.linkedInUrl || contact.profile_url || '',
-            email: '',
+            email,
             emailStatus: contact.emailStatus,
-          });
+          };
+          if (idx !== -1) {
+            updatedExports.push({ idx, entry: newExport });
+          } else {
+            newExports.push(newExport);
+          }
+        });
+      } else {
+        // Overwrite if same first and last name, else add
+        const idx = exportContacts.findIndex(ec => ec.first_name === contact.first_name && ec.last_name === contact.last_name);
+        const newExport = {
+          id: contact.id,
+          first_name: contact.first_name,
+          last_name: contact.last_name,
+          title: contact.title || '',
+          company: contact.company || contact.current_org || '',
+          linkedInUrl: contact.linkedInUrl || contact.profile_url || '',
+          email: '',
+          emailStatus: contact.emailStatus,
+        };
+        if (idx !== -1) {
+          updatedExports.push({ idx, entry: newExport });
+        } else {
+          newExports.push(newExport);
         }
       }
     });
-    if (newExports.length > 0) {
-      setExportContacts(prev => [...prev, ...newExports]);
-    }
+    setExportContacts(prev => {
+      let updated = [...prev];
+      updatedExports.forEach(({ idx, entry }) => {
+        updated[idx] = entry;
+      });
+      return [...updated, ...newExports];
+    });
   };
 
-  const handleRemoveFromExport = (contactId: string) => {
-    setExportContacts(prev => prev.filter((c) => c.id !== contactId));
+  const handleRemoveFromExport = (contactId: string, email?: string) => {
+    setExportContacts(prev => prev.filter((c) => !(c.id === contactId && (email ? c.email === email : true))));
+  };
+
+  const handleClearExport = () => {
+    setExportContacts([]);
   };
 
   const handleExport = () => {
@@ -314,6 +333,7 @@ export default function Home() {
             onRemove={handleRemoveFromExport}
             onExport={handleExport}
             onExportAll={handleExportAll}
+            onClear={handleClearExport}
           />
         </div>
       </main>
